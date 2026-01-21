@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ilga25.github.io/informatica-facil/sitemap.xml
+Sitemap: https://ilga25.github.io/sitemap.xml
