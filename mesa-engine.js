@@ -45,10 +45,17 @@ function generate(input,recipes,foods,seed=1,previous=[]){const p=normalize(inpu
    const sum=totals(entries,recipes,foods);
    if(target.energy)score+=Math.abs(sum.kcal-target.energy)/target.energy*35;
    if(target.protein)score+=Math.max(0,target.protein-sum.protein)/target.protein*7;
+   // Practical variety matters as well as a numerical macro match. These are editorial
+   // ranking preferences, not nutritional upper limits or a guarantee of adequacy.
+   let pulseMeals=0,families={};
+   for(const e of entries){let r=recipes.find(r=>r.id===e.recipe),pulse=r.ingredients.filter(x=>['chickpeas','lentils','beans'].includes(x.id)).reduce((s,x)=>s+x.grams*e.scale,0);if(pulse>=100)pulseMeals++;let family=r.ingredients.find(x=>['chicken','salmon','tuna','egg','tofu','yogurt','chickpeas','lentils','beans'].includes(x.id))?.id||'cereal';families[family]=(families[family]||0)+1;let mass=r.ingredients.reduce((s,x)=>s+x.grams*e.scale,0);if(mass>900)score+=(mass-900)/100;}
+   score+=Math.max(0,pulseMeals-2)*4;
+   score+=Object.values(families).reduce((s,n)=>s+Math.max(0,n-2)*2,0);
+   score+=Math.max(0,sum.fiber-50)/10*3;
    if(['protein','recomp'].includes(p.goal))score-=sum.protein/Math.max(1,sum.kcal)*30;
    if(p.goal==='lose'&&!target.energy)score-=sum.fiber/50;
    if(p.budget==='low')score+=sum.cost*.7;
-   for(const e of entries){let r=recipes.find(r=>r.id===e.recipe),matches=r.ingredients.filter(x=>p.pantry.includes(x.id)).length;score-=matches*.13;score+=(used[e.recipe]||0)*(p.variety==='varied'?1.7:.12);}
+   for(const e of entries){let r=recipes.find(r=>r.id===e.recipe),matches=r.ingredients.filter(x=>p.pantry.includes(x.id)).length;score-=matches*.13;score+=(used[e.recipe]||0)*(p.variety==='varied'?.6:.08);}
    if(entries[1].recipe===entries[2].recipe&&pools.main.length>1)score+=8;
    score+=random()*.2;
    if(score<bestScore){best=entries;bestScore=score;}
